@@ -1,0 +1,101 @@
+//    MOLDY Tools 
+//
+//    Copyright (C) 2007,2008 Nava Whiteford, Justine Taylor
+//
+//
+//    This file is part of MOLDY Tools.
+//
+//    MOLDY Tools is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    MOLDY Tools is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with MOLDY Tools.  If not, see <http://www.gnu.org/licenses/>.
+
+
+Most programs require an input dcd containing all the frames to be analysed and a single pdb as a reference file.  The individual programs are compiled using "make program_name" or to compile all "make all".  To remove to compiled binaries "make clean".  All programs output to the standard output.
+
+Run ./program_name to get a list of required inputs.
+  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+dcd2Distance: Calculates the distance between two atoms.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+dcd2Angle: Calculates the angle between three atoms. 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+dcd2anyvec: Calculates the angle between a vector defined by two atoms and either the x, y or z axis.  The angle is always calculated with respect to the axis in the same quadrant as the start of the vector (atom1).  This is useful when calculating vector quantities with respect to the inwards or outwards bilayer normal.
+
+For example:			
+				      Reference Vector	
+     atom1 position	     X		     Y 		     Z
+	( 2  2  2 )    	( 1  0  0 )	( 0  1  0 )	( 0  0  1 )
+	(-2  2  2 )    	(-1  0  0 )	( 0  1  0 )	( 0  0  1 )
+	( 2 -2 -2 )    	( 1  0  0 )	( 0 -1  0 )	( 0  0 -1 )
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+dcd2anyvec_positive: Calculates the angle between a vector defined by two atoms and either the x,y or z axis.  The angle is always calculated with respect to the positive axis, i.e. (1 0 0), (0 1 0) or (0 0 1).
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+dcd2dorder: Calculates the Deuterium order parameters going down the lipid tails using:
+				
+				Output(i) = 3*cos^2theta(i)-1  
+
+Where theta(i) is the angle between the C(i)-H vector and the bilayer normal.  Vectors are defined in the "dictionary" file which has the following structure (see dictionary-example in the current directory).
+
+C32  C33  C34  C35  C36  C37  C38  C39  C310 C311 C312 C313 C314 C315 C316 (sn-1 carbons)
+H2X  H3X  H4X  H5X  H6X  H7X  H8X  H9X  H10X H11X H12X H13X H14X H15X H16X (sn-1 hydrogens)
+H2Y  H3Y  H4Y  H5Y  H6Y  H7Y  H8Y  H9Y  H10Y H11Y H12Y H13Y H14Y H15Y H16Y 	" "
+NA   NA   NA   NA   NA   NA   NA   NA   NA   NA   NA   NA   NA   NA   H16Z 	" "
+C22  C23  C24  C25  C26  C27  C28  C29  C210 C211 C212 C213 C214 C215 C216 C217 C218 (sn-2 carbons)
+H2S  H3S  H4S  H5S  H6S  H7S  H8S  H91  H101 H11S H12S H13S H14S H15S H16S H17S H18S (sn-2 hydrogens)
+H2R  H3R  H4R  H5R  H6R  H7R  H8R  NA   NA   H11R H12R H13R H14R H15R H16R H17R H18R 	  " "
+NA   NA   NA   NA   NA   NA   NA   NA   NA   NA   NA   NA   NA   NA   NA   NA   H18T	  " " 
+
+For each carbon the vector is calculated between it and the attached hydrogen.  NA is used to define missing hydrogens (i.e. double bonds etc.)  Results are reported as:
+
+FRAME 200
+frame 1 results for each lipid
+SNx Cy H1 H2 H3
+.
+.
+.
+FRAME 200
+frame 2 results for each lipid
+.
+.
+.
+etc.
+.
+.
+.
+FRAME AVERAGE
+results for each carbon averaged over all lipids and all frames
+.
+.
+.
+FRAME SD
+standard deviation
+.
+.
+.
+
+Typically the last lines are all that is required.
+
+Further manipulations is needed (or can change the code!) to get to -Scd = -1/2*<output> which is typically reported in the literature.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+dcd2slicecount: Calculates the number of atoms in a slice of the simulation cell.  This requires that the input dcd files first be centered around the membrane, to eliminate counting errors resulting from membrane drift.  The program requires a filtered dcd file, with only the atoms to be counted.  These can be easily created in VMD.  The full simulation dcd file, used for calculating the full box size.  Both of these dcds must be centered around the membrane as mentioned.  The slice direction should be defined, z is the most typical for membrane distributions, and the total number of slices.  Results are reported as number of counts per frame reported for each frame, followed by the sum total counts over all frames.  Per frame data can be suppressed using the "totalonly" key word.
+
